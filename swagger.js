@@ -8,7 +8,7 @@ const swaggerOptions = {
         info: {
             title: 'User Crud API',
             version: '1.0.1',
-            description: 'Simple CRUD API using Node.js, Express, and MySQL'
+            description: 'Simple CRUD API using Node.js, Express, and MySQL and Swagger for documentation',
         },
         servers: [{
             url: 'http://localhost:3000'
