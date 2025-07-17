@@ -7,7 +7,7 @@ const swaggerOptions = {
         openapi: '3.0.0',
         info: {
             title: 'User Crud API',
-            version: '1.0.0',
+            version: '1.0.1',
             description: 'Simple CRUD API using Node.js, Express, and MySQL'
         },
         servers: [{
