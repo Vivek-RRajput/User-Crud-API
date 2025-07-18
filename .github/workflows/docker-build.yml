@@ -24,3 +24,32 @@ jobs:
 
     - name: Push Docker Image
       run: docker push ${{ secrets.DOCKER_USERNAME }}/crud-api:latest
+
+    - name: Send Success Mail
+      if: success()
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 465
+        username: ${{ secrets.MAIL_USERNAME }}
+        password: ${{ secrets.MAIL_PASSWORD }}
+        subject: Docker Build Succeeded 🎉
+        to: ${{ secrets.MAIL_RECEIVER }}
+        from: GitHub CI <${{ secrets.MAIL_USERNAME }}>
+        body: |
+          ✅ Docker image for CRUD API has been built and pushed successfully to Docker Hub.
+
+    - name: Send Failure Mail
+      if: failure()
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 465
+        username: ${{ secrets.MAIL_USERNAME }}
+        password: ${{ secrets.MAIL_PASSWORD }}
+        subject: Docker Build Failed ❌
+        to: ${{ secrets.MAIL_RECEIVER }}
+        from: GitHub CI <${{ secrets.MAIL_USERNAME }}>
+        body: |
+          ❌ Docker image build or push FAILED.
+          Please check the GitHub Actions log for more details.
