@@ -1,55 +1,66 @@
-name: Build and Push to DockerHub
+name: Build, Push Docker Image and Send Email
 
 on:
   push:
     branches:
-      - main  # triggers on push to main branch
+      - main
 
 jobs:
-  build-and-push:
+  build-and-notify:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-    - name: Log in to DockerHub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: Build Docker Image
-      run: docker build -t ${{ secrets.DOCKER_USERNAME }}/crud-api:latest .
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Push Docker Image
-      run: docker push ${{ secrets.DOCKER_USERNAME }}/crud-api:latest
+      - name: Build and Push Docker Image
+        id: docker_build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/crud-api:latest
 
-    - name: Send Success Mail
-      if: success()
-      uses: dawidd6/action-send-mail@v3
-      with:
-        server_address: smtp.gmail.com
-        server_port: 465
-        username: ${{ secrets.MAIL_USERNAME }}
-        password: ${{ secrets.MAIL_PASSWORD }}
-        subject: Docker Build Succeeded 🎉
-        to: ${{ secrets.MAIL_RECEIVER }}
-        from: GitHub CI <${{ secrets.MAIL_USERNAME }}>
-        body: |
-          ✅ Docker image for CRUD API has been built and pushed successfully to Docker Hub.
+      - name: Send Success Email
+        if: success()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: ✅ Docker Image Build Success
+          to: ${{ secrets.EMAIL_TO }}
+          from: ${{ secrets.EMAIL_USERNAME }}
+          body: |
+            Docker image has been successfully built and pushed!
 
-    - name: Send Failure Mail
-      if: failure()
-      uses: dawidd6/action-send-mail@v3
-      with:
-        server_address: smtp.gmail.com
-        server_port: 465
-        username: ${{ secrets.MAIL_USERNAME }}
-        password: ${{ secrets.MAIL_PASSWORD }}
-        subject: Docker Build Failed ❌
-        to: ${{ secrets.MAIL_RECEIVER }}
-        from: GitHub CI <${{ secrets.MAIL_USERNAME }}>
-        body: |
-          ❌ Docker image build or push FAILED.
-          Please check the GitHub Actions log for more details...
+            📦 Image: ${{ secrets.DOCKER_USERNAME }}/crud-api:latest
+            🕒 Time: ${{ github.event.head_commit.timestamp }}
+            🔗 Commit: ${{ github.event.head_commit.url }}
+
+      - name: Send Failure Email
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: ❌ Docker Image Build Failed
+          to: ${{ secrets.EMAIL_TO }}
+          from: ${{ secrets.EMAIL_USERNAME }}
+          body: |
+            Docker image build or push has failed.
+
+            Please check the GitHub Actions logs for more details:
+            🔗 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
