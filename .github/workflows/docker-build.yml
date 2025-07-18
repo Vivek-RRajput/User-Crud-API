@@ -52,4 +52,4 @@ jobs:
         from: GitHub CI <${{ secrets.MAIL_USERNAME }}>
         body: |
           ❌ Docker image build or push FAILED.
-          Please check the GitHub Actions log for more details.
+          Please check the GitHub Actions log for more details...
