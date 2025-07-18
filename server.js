@@ -13,7 +13,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use('/api/users/',userRoutes);
 
 const PORT=3000;
-app.listen(PORT,()=>{
+app.listen(PORT,'0.0.0.0',()=>{
     console.log(`Server is running at http://localhost:${PORT}`);
     console.log(`API documentation available at http://localhost:${PORT}/api-docs`);
 });
